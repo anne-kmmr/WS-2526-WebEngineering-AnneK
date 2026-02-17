@@ -1,0 +1,75 @@
+<!doctype html>
+<html lang="de">
+<head>
+    <meta charset=" ">
+    <meta name="viewport"
+          content="width=device-width, user-scalable=no, initial-scale=1.0, maximum-scale=1.0, minimum-scale=1.0">
+    <meta http-equiv="X-UA-Compatible" content="ie=edge">
+    <title>PokéAPI</title>
+</head>
+<body>
+    <h1>PokéAPI</h1>
+    <p>Mittels der Pokémon API (Poké API) nach Pokémons suchen!</p>
+    <hr>
+    <h3>Suchfeld:</h3>
+    <div class="container">
+        <form id="pokemonForm">
+            <input type="number" id="pokemonId" placeholder="Pokédex-Nummer eingeben" min="1" required>
+            <button type="submit">Suchen</button>
+        </form>
+
+        <div id="result"></div>
+    </div>
+
+    <script>
+        //hat ChatGPT erstellt, woher sollen wir das alles können?!
+        document.getElementById("pokemonForm").addEventListener("submit", function(e) {
+            e.preventDefault();
+
+            const id = document.getElementById("pokemonId").value;
+            const url = `https://pokeapi.co/api/v2/pokemon/${id}`;
+
+            fetch(url)
+                .then(response => {
+                    if (!response.ok) {
+                        throw new Error("Pokémon nicht gefunden!");
+                    }
+                    return response.json();
+                })
+                .then(data => {
+
+                    const name = data.name;
+                    const frontImg = data.sprites.front_default;
+                    const backImg = data.sprites.back_default;
+
+                    const types = data.types.map(t => t.type.name);
+
+                    const moves = data.moves
+                        .slice(0, 5) // nur erste 5 Attacken anzeigen
+                        .map(m => m.move.name);
+
+                    document.getElementById("result").innerHTML = `
+                        <div class="pokemon-card">
+                            <h2>${name.toUpperCase()}</h2>
+                            <img src="${frontImg}" alt="Front">
+                            <img src="${backImg}" alt="Back">
+
+                            <h3>Typen</h3>
+                            <p>${types.join(", ")}</p>
+
+                            <h3>Attacken (Auswahl)</h3>
+                            <ul>
+                                ${moves.map(move => `<li>${move}</li>`).join("")}
+                            </ul>
+                        </div>
+                    `;
+                })
+                .catch(error => {
+                    document.getElementById("result").innerHTML =
+                        `<p style="color:red;">${error.message}</p>`;
+                });
+        });
+    </script>
+
+</body>
+</html>
